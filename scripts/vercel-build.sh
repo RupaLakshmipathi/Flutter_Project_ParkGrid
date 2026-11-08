@@ -12,3 +12,10 @@ export PATH="${FLUTTER_DIR}/bin:${PATH}"
 
 flutter --disable-analytics pub get --enforce-lockfile
 flutter --disable-analytics build web --release
+
+# Vercel's project is configured to publish the repository's web directory.
+cp -a build/web/. web/
+
+test -f web/index.html
+test -f web/flutter_bootstrap.js
+test -f web/main.dart.js
