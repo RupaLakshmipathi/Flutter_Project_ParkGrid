@@ -3,5 +3,5 @@
   "framework": null,
   "installCommand": "echo 'Flutter dependencies are installed by the build script'",
   "buildCommand": "bash ./scripts/vercel-build.sh",
-  "outputDirectory": "web"
+  "outputDirectory": "build/web"
 }
