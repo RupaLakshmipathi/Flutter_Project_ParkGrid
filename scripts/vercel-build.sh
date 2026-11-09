@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-trap 'status=$?; printf "Vercel Flutter build failed at line %s (exit %s): %s\\n" "${BASH_LINENO[0]}" "${status}" "${BASH_COMMAND}" >&2; exit "${status}"' ERR
+trap 'status=$?; printf "Vercel Flutter build failed at line %s (exit %s): %s\\n" "${LINENO}" "${status}" "${BASH_COMMAND}" >&2; exit "${status}"' ERR
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "${PROJECT_ROOT}"
+echo "Project root: ${PROJECT_ROOT}"
 
 FLUTTER_DIR="${HOME}/.cache/parkgrid-flutter"
 
@@ -20,10 +24,17 @@ echo "Resolving Dart dependencies..."
 flutter --disable-analytics pub get --enforce-lockfile
 
 echo "Building Flutter web release..."
-flutter --disable-analytics build web --release
+flutter --disable-analytics build web --release --verbose
 
 # Vercel publishes Flutter's generated web build directly.
 echo "Checking generated Vercel output..."
+if [[ ! -f build/web/index.html ]]; then
+  echo "Flutter build returned without build/web/index.html. Generated index.html files:" >&2
+  find . -maxdepth 6 -type f -name index.html -not -path './.git/*' -print >&2 || true
+  echo "Build directory contents:" >&2
+  find build -maxdepth 5 -print >&2 || true
+  exit 1
+fi
 test -f build/web/index.html
 test -f build/web/flutter_bootstrap.js
 test -f build/web/main.dart.js
