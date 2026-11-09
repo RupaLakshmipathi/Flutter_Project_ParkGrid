@@ -6,6 +6,7 @@ class ParkingLocation {
     required this.id,
     required this.name,
     required this.address,
+    this.description = '',
     required this.category,
     required this.hourlyRate,
     this.distanceKm = 1.0,
@@ -18,11 +19,9 @@ class ParkingLocation {
   final String id;
   final String name;
   final String address;
+  final String description;
   final ParkingCategory category;
   final double hourlyRate;
-
-  /// Approximate distance in kilometres from the driver's current area.
-  /// Demo data uses sample distances until a maps/location service is connected.
   final double distanceKm;
   final String openingHours;
   final String imageEmoji;
@@ -38,6 +37,7 @@ class ParkingLocation {
     String? id,
     String? name,
     String? address,
+    String? description,
     ParkingCategory? category,
     double? hourlyRate,
     double? distanceKm,
@@ -50,6 +50,7 @@ class ParkingLocation {
       id: id ?? this.id,
       name: name ?? this.name,
       address: address ?? this.address,
+      description: description ?? this.description,
       category: category ?? this.category,
       hourlyRate: hourlyRate ?? this.hourlyRate,
       distanceKm: distanceKm ?? this.distanceKm,
@@ -76,6 +77,7 @@ class ParkingLocation {
       'id': id,
       'name': name,
       'address': address,
+      'description': description,
       'category': category.name,
       'hourlyRate': hourlyRate,
       'distanceKm': distanceKm,
@@ -92,6 +94,7 @@ class ParkingLocation {
       id: id,
       name: json['name'] as String,
       address: json['address'] as String,
+      description: json['description'] as String? ?? '',
       category: ParkingCategory.values.byName(json['category'] as String),
       hourlyRate: (json['hourlyRate'] as num).toDouble(),
       distanceKm:

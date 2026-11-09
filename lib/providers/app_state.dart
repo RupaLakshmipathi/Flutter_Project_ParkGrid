@@ -445,6 +445,18 @@ class AppState extends ChangeNotifier {
     }
 
     final exists = _parkingLocations.any((p) => p.id == location.id);
+    final previous = parkingById(location.id);
+    if (previous != null && location.totalSlots < previous.totalSlots) {
+      final removedSlotNumbers = previous.slots
+          .where((slot) => slot.number > location.totalSlots)
+          .map((slot) => slot.number)
+          .toSet();
+      if (removedSlotNumbers.any(
+        (number) => reservationForSlot(location.id, number) != null,
+      )) {
+        return false;
+      }
+    }
     if (exists) {
       _parkingLocations = _parkingLocations
           .map((p) => p.id == location.id ? location : p)
@@ -458,12 +470,56 @@ class AppState extends ChangeNotifier {
     return true;
   }
 
+  Future<bool> deleteParkingLocation(String parkingId) async {
+    if (!isAdmin || parkingById(parkingId) == null) {
+      return false;
+    }
+    final hasActiveBookings = _bookings.any(
+      (booking) =>
+          booking.parkingId == parkingId &&
+          booking.status != BookingStatus.cancelled &&
+          booking.status != BookingStatus.completed &&
+          booking.endDateTime.isAfter(DateTime.now()),
+    );
+    if (hasActiveBookings) {
+      return false;
+    }
+    _parkingLocations = _parkingLocations
+        .where((location) => location.id != parkingId)
+        .toList(growable: false);
+    await _persist();
+    notifyListeners();
+    return true;
+  }
+
+  Booking? reservationForSlot(String parkingId, int slotNumber) {
+    final now = DateTime.now();
+    final reservations =
+        _bookings
+            .where(
+              (booking) =>
+                  booking.parkingId == parkingId &&
+                  booking.slotNumber == slotNumber &&
+                  booking.status != BookingStatus.cancelled &&
+                  booking.status != BookingStatus.completed &&
+                  booking.endDateTime.isAfter(now),
+            )
+            .toList(growable: false)
+          ..sort((a, b) => a.startDateTime.compareTo(b.startDateTime));
+    return reservations.firstOrNull;
+  }
+
   Future<bool> updateSlotStatus({
     required String parkingId,
     required int slotNumber,
     required SlotStatus status,
   }) async {
     if (!isAdmin) {
+      return false;
+    }
+
+    if (status == SlotStatus.available &&
+        reservationForSlot(parkingId, slotNumber) != null) {
       return false;
     }
 

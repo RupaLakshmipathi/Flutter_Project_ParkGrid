@@ -6,6 +6,7 @@ import 'package:parkgrid/core/widgets/pastel_button.dart';
 import 'package:parkgrid/models/parking_location.dart';
 import 'package:parkgrid/providers/app_state.dart';
 import 'package:parkgrid/screens/bookings_screen.dart';
+import 'package:parkgrid/screens/admin_module_screen.dart';
 import 'package:parkgrid/screens/explore_screen.dart';
 import 'package:parkgrid/screens/profile_admin_screen.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,7 @@ class HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     if (appState.isAdmin) {
-      return Scaffold(body: AdminDashboardScreen(appState: appState));
+      return const AdminModuleScreen();
     }
     final pages = [
       const _DashboardTab(),
